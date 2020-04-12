@@ -21,13 +21,13 @@ public class RaidForumsApi {
     private String url;
     private Map<String, String> request_headers;
 
-    private RaidForumsApi(String url, Map<String, String> request_headers) throws MalformedURLException, URISyntaxException{
+    private RaidForumsApi(String url, Map<String, String> request_headers) throws MalformedURLException, URISyntaxException {
         this.url = url;
         this.request_headers = request_headers;
         new URL(url).toURI();                                   // test if @url is valid
     }
 
-    public static RaidForumsApi getInstance() throws MalformedURLException, URISyntaxException{
+    public static RaidForumsApi getInstance() throws MalformedURLException, URISyntaxException {
         String url = "https://raidforums.com";
         Map<String, String> request_headers = new HashMap<String, String>();
         request_headers.put("User-Agent", "Mozilla/5.0 (Linux; Android 5.1.1; 2014817 Build/LMY47V) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.111 Mobile Safari/537.36");
@@ -46,55 +46,53 @@ public class RaidForumsApi {
             }
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                try(AutoCloseable autoCloseable11 = () -> reader.close()) {
+                try (AutoCloseable autoCloseable11 = () -> reader.close()) {
                     String f;
                     while ((f = reader.readLine()) != null) {
                         source_code.add(f);
                     }
                 }
-            }catch (FileNotFoundException e){
+            } catch (FileNotFoundException e) {
                 throw new RaidForumsGeneralException("User does not exist");
             }
-            Map<String, String> userValues = new HashMap<>();
-            int g =0;
-            boolean f = false;
-            boolean f1 = false;
-            for (String l : source_code){
-                String[] x =  l.replaceAll("\\<.*?>","").split(":");
-
-                if (f){
-                    userValues.put("Total Threads", l.replaceAll("\\<.*?>","").split(" ")[0]);
-                    f = false;
-                    continue;
-                }else if (f1){
-                    userValues.put("Total Posts", l.replaceAll("\\<.*?>","").split(" ")[0]);
-                    f1 = false;
-                    continue;
-                }
-
-                if (l.contains("The member you specified is either invalid or doesn't exist.")){
-                    throw new RaidForumsGeneralException("User does not exist");
-                }else if (l.contains("Joined")){
-                    userValues.put("Join Date", x[1]);
-                }else if (l.contains("Time Spent Online")){
-                    userValues.put("Time Spent Online", x[1]);
-                }else if (l.contains("Total Threads")){
-                    f = true;
-                    continue;
-                }else if (l.contains("Total Posts")){
-                    f1 = true;
-                    continue;
-                }
-
-                g++;
-            }
-            if (!userValues.isEmpty()){
-                return new User(username, userValues.get("Join Date"), userValues.get("Time Spent Online"), userValues.get("Total Posts"), userValues.get("Total Threads"));
-            }
         }
+        Map<String, String> userValues = new HashMap<>();
+        boolean f = false;
+        boolean f1 = false;
+        for (String l : source_code) {
+            String[] x = l.replaceAll("\\<.*?>", "").split(":");
+
+            if (f) {
+                userValues.put("Total Threads", l.replaceAll("\\<.*?>", "").split(" ")[0]);
+                f = false;
+                continue;
+            } else if (f1) {
+                userValues.put("Total Posts", l.replaceAll("\\<.*?>", "").split(" ")[0]);
+                f1 = false;
+                continue;
+            }
+
+            if (l.contains("The member you specified is either invalid or doesn't exist.")) {
+                throw new RaidForumsGeneralException("User does not exist");
+            } else if (l.contains("Joined")) {
+                userValues.put("Join Date", x[1]);
+            } else if (l.contains("Time Spent Online")) {
+                userValues.put("Time Spent Online", x[1]);
+            } else if (l.contains("Total Threads")) {
+                f = true;
+                continue;
+            } else if (l.contains("Total Posts")) {
+                f1 = true;
+                continue;
+            }
+
+        }
+        if (!userValues.isEmpty()) {
+            return new User(username, userValues.get("Join Date"), userValues.get("Time Spent Online"), userValues.get("Total Posts"), userValues.get("Total Threads"));
+        }
+
         return null;
     }
-
 
 
 }
